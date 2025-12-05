@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { useKeycloak } from '@react-keycloak/web';
 
 type Record = {
+  date: string
   user_id: string;
   prosthesis_type: string;
   muscle_group: string;
-  signal_frequency: number;
-  signal_duration: number;
-  signal_amplitude: number;
-  signal_time: string;
+  signals_count: number;
+  signal_frequency_avg: number;
+  signal_duration_avg: number;
+  signal_amplitude_avg: number;
+  signal_duration_total: number;
 }
 
 const ReportPage: React.FC = () => {
@@ -76,30 +78,32 @@ const ReportPage: React.FC = () => {
             loading ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
-          {loading ? 'Generating Report...' : 'Download Report'}
+          {loading ? 'Generating Report...' : 'Get Report'}
         </button>) || (
             <button onClick={() => keycloak.logout()}>Logout</button>
         )}
         {response && (
-            <table className="min-w-full mt-4">
+            <table border={1}>
               <tr>
+                <td>Date</td>
                 <td>User ID</td>
                 <td>Prosthesis Type</td>
                 <td>Muscle Group</td>
                 <td>Signal Frequency</td>
                 <td>Signal Duration</td>
                 <td>Signal Amplitude</td>
-                <td>Signal Time</td>
+                <td>Signals count</td>
               </tr>
               {response.map((record, index) => (
                   <tr key={index}>
+                    <td>{record.date}</td>
                     <td>{record.user_id}</td>
                     <td>{record.prosthesis_type}</td>
                     <td>{record.muscle_group}</td>
-                    <td>{record.signal_frequency}</td>
-                    <td>{record.signal_duration}</td>
-                    <td>{record.signal_amplitude}</td>
-                    <td>{record.signal_time}</td>
+                    <td>{record.signal_frequency_avg}</td>
+                    <td>{record.signal_duration_avg}</td>
+                    <td>{record.signal_amplitude_avg}</td>
+                    <td>{record.signals_count}</td>
                   </tr>
                 ))}
             </table>

@@ -4,4 +4,4 @@ USER root
 # Install Python dependencies
 COPY requirements.txt /requirements.txt
 RUN pip3 install --upgrade pip
-RUN pip3 install --no-cache-dir -r /requirements.txt -i https://nexus.tcsbank.ru/repository/pypi-all/simple/
+RUN pip3 install --no-cache-dir -r /requirements.txt

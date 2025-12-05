@@ -96,13 +96,15 @@ ch_client = clickhouse_connect.get_client(
 
 
 class Report(BaseModel):
+    date: datetime
     user_id: int
     prosthesis_type: str
     muscle_group: str
-    signal_frequency: float
-    signal_duration: float
-    signal_amplitude: float
-    signal_time: datetime
+    signals_count: int
+    signal_frequency_avg: float
+    signal_duration_avg: float
+    signal_amplitude_avg: float
+    signal_duration_total: float
 
 
 def get_current_user_id(request: Request) -> str:
@@ -129,7 +131,6 @@ def get_current_user_id(request: Request) -> str:
     if ROLE not in roles:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Required role {ROLE}")
     user_id = payload.get("system_id")
-    logging.info(user_id)
     if not user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No user in token")
     return user_id
@@ -141,22 +142,22 @@ def get_reports(
 ):
     query = """
         SELECT
+            date,
             user_id,
             prosthesis_type,
             muscle_group,
-            signal_frequency,
-            signal_duration,
-            signal_amplitude,
-            signal_time
-        FROM emg_sensor_data
+            signals_count, 
+            signal_frequency_avg,
+            signal_duration_avg, 
+            signal_amplitude_avg,
+            signal_duration_total
+        FROM prosthesis_reports
         WHERE user_id = %(user_id)s
-        ORDER BY (prosthesis_type, signal_time)
+        ORDER BY (prosthesis_type, signals_count)
         LIMIT 365
     """
 
-    logging.info(user_id)
     result = ch_client.query(query, parameters={"user_id": user_id})
-    logging.info(result)
     cols = result.column_names
     rows = [dict(zip(cols, row)) for row in result.result_rows]
 

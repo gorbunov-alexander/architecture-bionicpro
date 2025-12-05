@@ -6,12 +6,10 @@ import os
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-# from airflow_clickhouse_plugin.hooks.clickhouse import ClickHouseHook
 
 CRM_CSV_PATH = "/opt/airflow/sample_files/crm.csv"
 TELEMETRY_CSV_PATH = "/opt/airflow/sample_files/signals.csv"
 
-CLICKHOUSE_CONN_ID = "olap_db"
 DAG_ID = "daily_report"
 OLAP_TABLE = "prosthesis_reports"
 
@@ -27,6 +25,7 @@ with DAG(
         schedule="0 2 * * *",
         catchup=False,
         max_active_runs=1,
+        is_paused_upon_creation=False,
         default_args=default_args,
 ) as dag:
 
@@ -125,8 +124,6 @@ with DAG(
                 int(row["signal_duration_total"])
             ]
             records.append(record)
-
-        print(records[0:2])
 
         client.insert(OLAP_TABLE, records,
                       column_names=['user_id', 'date', 'crm_name', 'crm_age', 'crm_gender',
