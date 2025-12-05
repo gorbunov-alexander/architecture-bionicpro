@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: keycloak_user
       POSTGRES_PASSWORD: keycloak_password
     volumes:
-      - ./postgres-keycloak-data:/var/lib/postgresql/data
+      - keycloak_db_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
   keycloak:
@@ -36,7 +36,41 @@ services:
     ports:
       - "3000:3000"
     environment:
-      REACT_APP_API_URL: http://localhost:8000
+      REACT_APP_API_URL: http://report:8000
       REACT_APP_KEYCLOAK_URL: http://localhost:8080
       REACT_APP_KEYCLOAK_REALM: reports-realm
       REACT_APP_KEYCLOAK_CLIENT_ID: reports-frontend
+
+  report:
+    build:
+      context: ./report
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: olap_db
+      DB_USER: report
+      DB_PASSWORD: 'p@ssw0rd'
+      JWKS_URL: 'http://keycloak:8080/realms/reports-realm/protocol/openid-connect/certs'
+    depends_on:
+      - olap_db
+
+  olap_db:
+      image: clickhouse/clickhouse-server:latest
+      ports:
+        - "8123:8123"
+        - "9431:9000"
+      volumes:
+        - olap_db_data:/var/lib/clickhouse
+        - ./olap-db:/docker-entrypoint-initdb.d
+        - ./olap-db:/var/lib/clickhouse/user_files
+        - ./olap-db/users.xml:/etc/clickhouse-server/users.d/users.xml
+      healthcheck:
+        test: ["CMD-SHELL", "clickhouse-client --query 'SELECT 1'"]
+        interval: 1s
+        timeout: 3s
+        retries: 30
+
+volumes:
+  keycloak_db_data:
+  olap_db_data:

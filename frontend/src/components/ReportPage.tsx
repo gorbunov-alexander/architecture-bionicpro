@@ -1,10 +1,21 @@
 import React, { useState } from 'react';
 import { useKeycloak } from '@react-keycloak/web';
 
+type Record = {
+  user_id: string;
+  prosthesis_type: string;
+  muscle_group: string;
+  signal_frequency: number;
+  signal_duration: number;
+  signal_amplitude: number;
+  signal_time: string;
+}
+
 const ReportPage: React.FC = () => {
   const { keycloak, initialized } = useKeycloak();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [response, setResponse] = useState<Record[] | null>(null);
 
   const downloadReport = async () => {
     if (!keycloak?.token) {
@@ -21,6 +32,12 @@ const ReportPage: React.FC = () => {
           'Authorization': `Bearer ${keycloak.token}`
         }
       });
+      if (!response.ok) {
+        setError(`HTTP error! status: ${response.status}`);
+        return;
+      }
+
+      setResponse(await response.json());
 
       
     } catch (err) {
@@ -51,8 +68,8 @@ const ReportPage: React.FC = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <div className="p-8 bg-white rounded-lg shadow-md">
         <h1 className="text-2xl font-bold mb-6">Usage Reports</h1>
-        
-        <button
+
+        {keycloak.tokenParsed?.realm_access?.roles.includes('prothetic_user') && (<button
           onClick={downloadReport}
           disabled={loading}
           className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 ${
@@ -60,8 +77,33 @@ const ReportPage: React.FC = () => {
           }`}
         >
           {loading ? 'Generating Report...' : 'Download Report'}
-        </button>
-
+        </button>) || (
+            <button onClick={() => keycloak.logout()}>Logout</button>
+        )}
+        {response && (
+            <table className="min-w-full mt-4">
+              <tr>
+                <td>User ID</td>
+                <td>Prosthesis Type</td>
+                <td>Muscle Group</td>
+                <td>Signal Frequency</td>
+                <td>Signal Duration</td>
+                <td>Signal Amplitude</td>
+                <td>Signal Time</td>
+              </tr>
+              {response.map((record, index) => (
+                  <tr key={index}>
+                    <td>{record.user_id}</td>
+                    <td>{record.prosthesis_type}</td>
+                    <td>{record.muscle_group}</td>
+                    <td>{record.signal_frequency}</td>
+                    <td>{record.signal_duration}</td>
+                    <td>{record.signal_amplitude}</td>
+                    <td>{record.signal_time}</td>
+                  </tr>
+                ))}
+            </table>
+        )}
         {error && (
           <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">
             {error}
