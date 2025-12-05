@@ -69,6 +69,9 @@
         "email": "prothetic1@example.com",
         "firstName": "Prothetic",
         "lastName": "One",
+        "attributes": {
+          "system_id": ["1"]
+        },
         "credentials": [
           {
             "type": "password",
@@ -84,6 +87,9 @@
         "email": "prothetic2@example.com",
         "firstName": "Prothetic",
         "lastName": "Two",
+        "attributes": {
+          "system_id": ["2"]
+        },
         "credentials": [
           {
             "type": "password",
@@ -99,6 +105,9 @@
         "email": "prothetic3@example.com",
         "firstName": "Prothetic",
         "lastName": "Three",
+        "attributes": {
+          "system_id": ["3"]
+        },
         "credentials": [
           {
             "type": "password",
@@ -116,7 +125,27 @@
         "publicClient": true,
         "redirectUris": ["http://localhost:3000/*"],
         "webOrigins": ["http://localhost:3000"],
-        "directAccessGrantsEnabled": true
+        "directAccessGrantsEnabled": false,
+        "standardFlowEnabled": true,
+        "attributes": {
+          "pkceCodeChallengeMethod" : "S256"
+        },
+        "protocolMappers": [
+          {
+            "name": "system_id",
+            "protocol": "openid-connect",
+            "protocolMapper": "oidc-usermodel-attribute-mapper",
+            "consentRequired": true,
+            "config": {
+              "user.attribute": "system_id",
+              "claim.name": "system_id",
+              "jsonType.label": "String",
+              "id.token.claim": "true",
+              "access.token.claim": "true",
+              "userinfo.token.claim": "true"
+            }
+          }
+        ]
       },
       {
         "clientId": "reports-api",
